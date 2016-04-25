@@ -27,3 +27,8 @@ mp2
 6. challenges  
 7. possible improvements  
 
+### potential effecient net  
+- unsurpervised layer by layer training  
+- extreme machine
+- use some function of deep net learned  
+
