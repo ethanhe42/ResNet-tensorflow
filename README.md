@@ -30,5 +30,6 @@ mp2
 ### potential effecient net  
 - unsurpervised layer by layer training  
 - extreme machine
-- use some function of deep net learned  
+- mimic training  
+
 
