@@ -24,22 +24,24 @@ def bias_variable(shape,name=None):
 def res_net(x, y, activation=tf.nn.elu):
 
     with tf.variable_scope('conv_layer1'):
-        net = tf.nn.conv2d(x, 16, [3, 3], batch_norm=True,
+        net = skflow.ops.conv2d(x, 16, [3, 3], batch_norm=True,
                                 activation=activation, bias=False,
                                 padding='SAME')
 
     for block in range(3):
         nfilters=16<<block
-        for layer in range(1):
+        for layer in range(2):
             net_copy=net
             name = 'block_%d/layer_%d' % (block, layer)
             for i in range(2):
                 with tf.variable_scope(name+'/'+str(i)):
-                    if block==0:
-                        i=1
+                    if layer==0 and block!=0 and i==0:
+                        up=1
+                    else:
+                        up=0
                     net = skflow.ops.conv2d(net,
                                 nfilters,
-                                [3, 3], [1, 2-i, 2-i, 1],
+                                [3, 3], [1, 1+up,1+up, 1],
                                 padding='SAME',
                                 activation=activation,
                                 batch_norm=True,
@@ -49,7 +51,7 @@ def res_net(x, y, activation=tf.nn.elu):
             if net_copy.get_shape().as_list()[1]!=net.get_shape().as_list()[1]:
                 net_copy=tf.nn.avg_pool(net_copy,[1,2,2,1],
                         strides=[1,2,2,1],padding='VALID')
-                net_copy=tf.pad(net_copy,[[0,0],[0,0],[0,0],[0,int(nfilters/2)]])
+                net_copy=tf.pad(net_copy,[[0,0],[0,0],[0,0],[int(nfilters/4),int(nfilters/4)]])
             net = net + net_copy
 
     #Global avg pooling
@@ -73,22 +75,28 @@ def res_net(x, y, activation=tf.nn.elu):
 path='./dataset/cifar-100-python'
 Xtr, Ytr, Xte, Yte=load_CIFAR100(path)
 nclass=20
+batch_size=256
+steps=int(Xtr.shape[0]/batch_size)
 w=weight_variable([64,nclass],'w')
 b=bias_variable([nclass,1],'b')
 classifier = skflow.TensorFlowEstimator(
      model_fn=res_net, 
-     n_classes=nclass, batch_size=128, steps=100,
+     n_classes=nclass, batch_size=batch_size,
+     steps=steps,
      learning_rate=0.1, continue_training=True,
-     optimizer="Adam")
-
+     optimizer="Adam",
+     verbose=1)
+import time
+t=time.time()
 while True:
-    # Train model and save summaries into logdir.
     classifier.fit(Xtr, Ytr, logdir="models/resnet/")
-
     # Calculate accuracy.
     score = metrics.accuracy_score(
-        Yte, classifier.predict(Xtr, batch_size=64))
-    print('Accuracy: {0:f}'.format(score))
-
+        Yte, classifier.predict(Xte, batch_size=64))
+    now=int((time.time()-t)/60.0)
+    print('Accuracy: {0:f}'.format(score)+' time'+str(now))
+    
     # Save model graph and checkpoints.
     classifier.save("models/resnet/")
+    if now > 170:
+        break

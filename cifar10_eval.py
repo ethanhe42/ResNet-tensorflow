@@ -57,9 +57,9 @@ def eval_once(saver, summary_writer, top_k_op, summary_op):
         threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
                                          start=True))
 
-      num_iter = int(math.ceil(FLAGS.num_examples / FLAGS.batch_size))
+      num_iter = int(math.ceil(FLAGS.num_examples / 256))
       true_count = 0  # Counts the number of correct predictions.
-      total_sample_count = num_iter * FLAGS.batch_size
+      total_sample_count = num_iter * 256
       step = 0
       while step < num_iter and not coord.should_stop():
         predictions = sess.run([top_k_op])

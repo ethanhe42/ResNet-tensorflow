@@ -1,0 +1,6 @@
+model_checkpoint_path: "/home/eli/work/mp2/models/resnet/model-3120"
+all_model_checkpoint_paths: "/home/eli/work/mp2/models/resnet/model-2340"
+all_model_checkpoint_paths: "/home/eli/work/mp2/models/resnet/model-2535"
+all_model_checkpoint_paths: "/home/eli/work/mp2/models/resnet/model-2730"
+all_model_checkpoint_paths: "/home/eli/work/mp2/models/resnet/model-2925"
+all_model_checkpoint_paths: "/home/eli/work/mp2/models/resnet/model-3120"

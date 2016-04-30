@@ -103,15 +103,6 @@ def distorted_inputs():
 
 
 def inputs(eval_data):
-  """Construct input for CIFAR evaluation using the Reader ops.
-  Args:
-    eval_data: bool, indicating if one should use the train or eval data set.
-  Returns:
-    images: Images. 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
-    labels: Labels. 1D tensor of [batch_size] size.
-  Raises:
-    ValueError: If no data_dir
-  """
   if not DATA_DIR:
     raise ValueError('Please supply a data_dir')
   data_dir = os.path.join(DATA_DIR, 'cifar-10-batches-bin')
@@ -120,20 +111,6 @@ def inputs(eval_data):
 
 
 def BatchNorm(x, use_local_stat=True, decay=0.9, epsilon=1e-5):
-    """
-    Batch normalization layer as described in:
-    `Batch Normalization: Accelerating Deep Network Training by
-    Reducing Internal Covariate Shift <http://arxiv.org/abs/1502.03167>`_.
-    Notes:
-    * Whole-population mean/variance is calculated by a running-average mean/variance.
-    * Epsilon for variance is set to 1e-5, as is `torch/nn <https://github.com/torch/nn/blob/master/BatchNormalization.lua>`_.
-    :param input: a NHWC tensor or a NC vector
-    :param use_local_stat: bool. whether to use mean/var of this batch or the running average.
-        Usually set to True in training and False in testing
-    :param decay: decay rate. default to 0.999.
-    :param epsilon: default to 1e-5.
-    """
-
     shape = x.get_shape().as_list()
     assert len(shape) in [2, 4]
 
@@ -192,11 +169,13 @@ def inference(images):
                                    nfilters],
                             stddev=np.sqrt(2.0/initfact/nfilters),
                             wd=0.0)
-                    if block==0:
-                        i=1
+                    if layer==0 and block!=0 and i==0:
+                        up=1
+                    else:
+                        up=0
                     net  = tf.nn.conv2d(net,
                             kernel,
-                            [1,2-i,2-i, 1],
+                            [1,1+up,1+up, 1],
                             padding='SAME')
                     net = BatchNorm(net)
                     net = tf.nn.elu(net, name=scope.name)
@@ -204,11 +183,11 @@ def inference(images):
     
 
        # residual function (identity shortcut)
-        if net_copy.get_shape().as_list()[1]!=net.get_shape().as_list()[1]:
-            net_copy=tf.nn.avg_pool(net_copy,[1,2,2,1],
-                    strides=[1,2,2,1],padding='VALID')
-            net_copy=tf.pad(net_copy,[[0,0],[0,0],[0,0],[0,int(nfilters/2)]])
-        net = net + net_copy
+            if net_copy.get_shape().as_list()[1]!=net.get_shape().as_list()[1]:
+                net_copy=tf.nn.avg_pool(net_copy,[1,2,2,1],
+                        strides=[1,2,2,1],padding='VALID')
+                net_copy=tf.pad(net_copy,[[0,0],[0,0],[0,0],[0,int(nfilters/2)]])
+            net = net + net_copy
 
     with tf.variable_scope('global_pool') as scope: 
         #Global avg pooling
@@ -309,6 +288,48 @@ def train(total_loss, global_step):
     train_op = tf.no_op(name='train')
 
   return train_op
+
+def accuracy(logits,labels):
+    
+    top_k_op = tf.nn.in_top_k(logits, labels, 1)
+
+    variable_averages=tf.train.Exponential
+    ema = tf.train.ExponentialMovingAverage(decay=MOVING_AVERAGE_DECAY)
+    avg_grad = ema.average_name(grads)
+    saver = tf.train.Saver({avg_grad: grads})
+    
+    ckpt = tf.train.get_checkpoint_state(FLAGS.checkpoint_dir)
+    saver.restore(sess, ckpt.model_checkpoint_path)
+
+    # Start the queue runners.
+    coord = tf.train.Coordinator()
+    threads = []
+    for qr in tf.get_collection(tf.GraphKeys.QUEUE_RUNNERS):
+      threads.extend(qr.create_threads(sess, coord=coord, daemon=True,
+                                       start=True))
+    
+    num_iter = int(math.ceil(10000 / 256))
+    true_count = 0  # Counts the number of correct predictions.
+    total_sample_count = num_iter * 256
+    step = 0
+    while step < num_iter and not coord.should_stop():
+      predictions = sess.run([top_k_op])
+      true_count += np.sum(predictions)
+      step += 1
+    
+    # Compute precision @ 1.
+    precision = true_count / total_sample_count
+    print('%s: precision @ 1 = %.3f' % (datetime.now(), precision))
+    
+    summary = tf.Summary()
+    summary.ParseFromString(sess.run(summary_op))
+    summary.value.add(tag='Precision @ 1', simple_value=precision)
+    summary_writer.add_summary(summary, global_step)
+    
+    coord.request_stop()
+    coord.join(threads, stop_grace_period_secs=10)
+
+
 
 
 def maybe_download_and_extract():
