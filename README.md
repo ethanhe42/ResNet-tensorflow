@@ -1,4 +1,13 @@
 mp2
+### results on cifar100  
+Single layer network with PCA whitening and Kmeans which is 75% accurate on CIFAR10, reaches   
+- Train accuracy:  0.613040816327
+- Validation accuracy:  0.562
+- Test accuracy:  0.559
+
+Traditional convolution neural network reaches 82% in 3 hours  
+7 layers Residual network reaches 83%  
+
 ### Features  
 - [ ] Output layers contain 20 labels
 - [x] Using tensorflow

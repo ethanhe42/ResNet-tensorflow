@@ -22,6 +22,40 @@ tf.app.flags.DEFINE_integer('max_steps', 1000000,
 tf.app.flags.DEFINE_boolean('log_device_placement', False,
                             """Whether to log device placement.""")
 
+def placeholder_inputs(batch_size):
+  images_placeholder = tf.placeholder(tf.float32, shape=(batch_size,
+                                                         mnist.IMAGE_PIXELS))
+  labels_placeholder = tf.placeholder(tf.int32, shape=(batch_size))
+  return images_placeholder, labels_placeholder
+
+
+def fill_feed_dict(data_set, images_pl, labels_pl):
+  images_feed, labels_feed = data_set.next_batch(FLAGS.batch_size,
+                                                 FLAGS.fake_data)
+  feed_dict = {
+      images_pl: images_feed,
+      labels_pl: labels_feed,
+  }
+  return feed_dict
+
+def do_eval(sess,
+            eval_correct,
+            images_placeholder,
+            labels_placeholder,
+            data_set):
+  true_count = 0  # Counts the number of correct predictions.
+  steps_per_epoch = data_set.num_examples // FLAGS.batch_size
+  num_examples = steps_per_epoch * FLAGS.batch_size
+  for step in xrange(steps_per_epoch):
+    feed_dict = fill_feed_dict(data_set,
+                               images_placeholder,
+                               labels_placeholder)
+    true_count += sess.run(eval_correct, feed_dict=feed_dict)
+  precision = true_count / num_examples
+  print('  Num examples: %d  Num correct: %d  Precision @ 1: %0.04f' %
+        (num_examples, true_count, precision))
+
+
 
 def train():
   """Train CIFAR-10 for a number of steps."""
@@ -35,7 +69,7 @@ def train():
     # Build a Graph that computes the logits predictions from the
     # inference model.
     logits = cifar10.inference(images)
-    test_pre = cifar10.inference(testImg)
+    test_pre = cifar10.inference(testImg,test=True)
      
     # Calculate loss.
     loss = cifar10.loss(logits, labels)

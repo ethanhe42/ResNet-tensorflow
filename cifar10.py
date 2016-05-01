@@ -289,8 +289,8 @@ def train(total_loss, global_step):
 
   return train_op
 
+
 def accuracy(logits,labels):
-    
     top_k_op = tf.nn.in_top_k(logits, labels, 1)
 
     variable_averages=tf.train.Exponential
