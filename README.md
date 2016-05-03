@@ -5,6 +5,10 @@ Single layer network with PCA whitening and Kmeans which is 75% accurate on CIFA
 - Validation accuracy:  0.562
 - Test accuracy:  0.559
 
+13 layers ResNet 60%  
+
+
+### results on cifar10
 Traditional convolution neural network reaches 82% in 3 hours  
 7 layers Residual network reaches 83%  
 
