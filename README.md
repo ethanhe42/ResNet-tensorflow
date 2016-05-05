@@ -1,4 +1,4 @@
-mp2
+# Reisdual neural network  
 ### results on cifar100  
 Single layer network with PCA whitening and Kmeans which is 75% accurate on CIFAR10, reaches   
 - Train accuracy:  0.613040816327
@@ -13,23 +13,23 @@ Traditional convolution neural network reaches 82% in 3 hours
 7 layers Residual network reaches 83%  
 
 ### Features  
-- [ ] Output layers contain 20 labels
+- [x] Output layers contain 20 labels
 - [x] Using tensorflow
-- [ ] number of filters
-- [ ] iterations
-- [ ] learning rate
-- [ ] batch size
-- [ ] regularization strength
-- [ ] number of layers
-- [ ] optimization methods 
-- [ ] drop out
-- [ ] initialization  
-- [ ] hidden neurons
-- [ ] filter size of convolution layers
-- [ ] filter size of pooling layers  
-- [ ] 
-- [ ] 
-- [ ] 
+- [x] number of filters
+- [x] iterations
+- [x] learning rate
+- [x] batch size
+- [x] regularization strength
+- [x] number of layers
+- [x] optimization methods
+  - mimic learning
+- [x] drop out
+- [x] initialization
+  - LSUV init
+  - Kaiming He's initialization
+- [x] hidden neurons
+- [x] filter size of convolution layers
+- [x] filter size of pooling layers  
 
 ### report
 1. implementation  
