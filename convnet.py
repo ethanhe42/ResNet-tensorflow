@@ -16,20 +16,20 @@ from data_utils import *
 from batch_norm import *
 from summary import _activation_summary,_add_loss_summaries
 
-batch_size = 64
+batch_size = 200
 initfact=10
 learning_rate=.1
-path='dataset'
+path=sys.argv[1]
 path+='/cifar-100-python'
 n_epochs = 800
 NUM_CLASSES=20
 valid_set=1000
 time_per_epoch=10
-repeat_layer=3
-visual=False
+repeat_layer=2
+visual=True
 ifbatchnorm=True
 weight_d=0
-ifDrop=True
+ifDrop=False
 def elapsed():
     return (time.time()-t)/60
 
@@ -47,11 +47,11 @@ def _variable_with_weight_decay(name, shape, stddev, wd):
     return var
 
 def eval(xx,yy):
-    return str(sess.run(accuracy,
+    return sess.run(accuracy,
           feed_dict={
               x:xx,
               y:yy,
-              is_training: False}))
+              is_training: False})
 
 def svd_orthonormal(shape):
     flat_shape = (shape[0], np.prod(shape[1:]))
@@ -60,6 +60,7 @@ def svd_orthonormal(shape):
     q = u if u.shape == flat_shape else v
     q = q.reshape(shape)
     return q
+tf.reset_default_graph()
 ######################architecture##########################################
 trainWs=[]
 x = tf.placeholder(tf.float32, [None, 32,32,3])
@@ -71,12 +72,13 @@ lr=tf.placeholder(tf.float32)
 
 kernel = _variable_with_weight_decay('conv0',
                                  shape=[3, 3, 3, 16],
-                                 stddev=np.sqrt(2.0/initfact/3)
+                                 stddev=np.sqrt(2.0/3/9)
                                  , wd=weight_d)
 trainWs.append(kernel)
 orthoInit0=kernel.assign(svd_orthonormal(kernel.get_shape().as_list()))
 upd0=kernel.assign(kernel/LUSV)
 ConvLayer0 = tf.nn.conv2d(x, kernel, [1, 1, 1, 1], padding='SAME')
+print(ConvLayer0.get_shape().as_list())
 if ifbatchnorm:
     net = batch_norm(ConvLayer0,is_training,scope='conv0')
 net = tf.nn.relu(net)
@@ -94,7 +96,7 @@ for block in range(3):
         net_copy=net
         for i in range(2):
             name = 'block_%d/layer_%d/conv%d' % (block, layer,i)
-            if layer==0 and block!=0 and i==0:
+            if layer==0 and i==0 and block!=0 :
                 up=2
             else:
                 up=1
@@ -102,7 +104,7 @@ for block in range(3):
                     shape=[3, 3,
                            net.get_shape().as_list()[3],
                            nfilters],
-                    stddev=np.sqrt(2.0/initfact/nfilters),
+                    stddev=np.sqrt(2.0/9/nfilters),
                     wd=weight_d)
             trainWs.append(kernel)
             orthoInit.append(kernel.assign(svd_orthonormal(kernel.get_shape().as_list())))
@@ -112,14 +114,15 @@ for block in range(3):
                     kernel,
                     [1,up,up, 1],
                     padding='SAME')
+            
+            print(net.get_shape().as_list())
             layers.append(net)
             if ifbatchnorm:
                 net = batch_norm(net,is_training, scope=name)
             #net = BatchNorm(net)
-            if i==0:
-                net = tf.nn.relu(net)
-                if ifDrop:
-                    net = tf.nn.dropout(net,.5)
+            net = tf.nn.relu(net)
+            if ifDrop:
+                net = tf.nn.dropout(net,.5)
             if visual:
                 _activation_summary(net)
         blocks.append(layers)
@@ -139,12 +142,16 @@ net = tf.nn.avg_pool(net,
               strides=[1, 1, 1, 1], 
               padding='VALID',name='global_pooling')
 net_shape = net.get_shape().as_list()
+hid=net_shape[1] * net_shape[2] * net_shape[3]
 net = tf.reshape(net,
-        [-1, net_shape[1] * net_shape[2] * net_shape[3]])
+        [-1, hid])
+if ifDrop:
+    net = tf.nn.dropout(net,.5)
+print(net.get_shape().as_list())
 #softmax
 weights = _variable_with_weight_decay('softmax_w',
-    [64, NUM_CLASSES],
-    stddev=1/64.0,
+    [hid, NUM_CLASSES],
+    stddev=np.sqrt(2.0/hid/NUM_CLASSES),
     wd=weight_d)
 biases = _variable_on_cpu('softmax_b',
     [NUM_CLASSES],
@@ -176,6 +183,7 @@ train_step=tf.train.AdagradOptimizer(lr).minimize(cross_entropy_mean)
 correct_prediction=tf.equal(tf.argmax(softmax_linear,1),y)
 accuracy=tf.reduce_mean(tf.cast(correct_prediction,'float'))
 tess=[cross_entropy_mean,train_step]
+
 ########################training########################################
 # load data
 Xtr, Ytr, Xte, Yte=load_CIFAR100(path)
@@ -186,10 +194,12 @@ Xte -= mean_image
 #img_var=Xtr.std(0)
 #Xtr/=img_var
 #Xte/=img_var
-#[D,V]=np.linalg.eig(np.cov(patches,rowvar=0))
-
+#M=Xtr.mean(0)
+#[D,V]=np.linalg.eig(np.cov(Xtr,rowvar=0))
+#
 #P = V.dot(np.diag(np.sqrt(1/(D + 0.1)))).dot(V.T)
-#patches = patches.dot(P)
+#Xtr = Xtr.dot(P)
+#Xte=Xte.dot(P)
 
 def nextBatch():
    idx=np.random.choice(numTrain,batch_size)
@@ -202,8 +212,8 @@ iter_per_epoch=numTrain // batch_size
 # variables:
 saver = tf.train.Saver()
 sess=tf.Session()
-#saver.restore(sess,'26.ckpt')
 sess.run(tf.initialize_all_variables())
+#saver.restore(sess,'summary/3_90.ckpt')
 if visual:
     summary_writer = tf.train.SummaryWriter("./summary", sess.graph)
 #########################LSUV#############################################3
@@ -246,38 +256,51 @@ if visual:
 #    _,initWeights=sess.run([weights_upd,cross_entropy],
 #            feed_dict={x: batch_xs, y: batch_ys, is_training: bn,LUSV:np.sqrt(variance/needed_variance)})
 ########################################################################### 
-t=time.time()
 
-for epoch_i in range(n_epochs):
+t=time.time()
+losses=[]
+valacces=[]
+trainacces=[]
+best=0
+best_val=0
+
+for epoch_i in range(0,n_epochs):
     avg_loss=0
     for batch_i in range(iter_per_epoch):
         batch_xs,batch_ys=nextBatch()   
         loss,_=sess.run([cross_entropy_mean,train_step],
                 feed_dict={x: batch_xs, y: batch_ys, is_training: True,lr:learning_rate})
         avg_loss+=loss
+        
         if batch_i%int(iter_per_epoch/10)==0:
+            losses.append(loss)
+            
             if visual:
                 summary_str = sess.run(summary_op,
                         feed_dict={x: batch_xs, y: batch_ys, is_training: False})
                 summary_writer.add_summary(summary_str, epoch_i*iter_per_epoch+batch_i)
             print('loss '+str(loss)+',time '+str(elapsed()))
-
+    train_acc=eval( batch_xs,batch_ys )
+    val_acc=eval(Xte[:1000],Yte[:1000])
     print("epoch"+str(epoch_i)+
             " avg_loss:"+str(avg_loss/iter_per_epoch)+
-            " train acc:"+ eval( batch_xs,batch_ys )+
-            " val acc:"+ eval(Xtr[range(-valid_set,-1)],Ytr[range(-valid_set,-1)]))
+            " train acc:"+ str(train_acc)+
+            " val acc:"+ str(val_acc))
+    
+    valacces.append(val_acc)
+    trainacces.append(train_acc)
+    if best_val<val_acc:
+        best_val=val_acc
+        best=epoch_i
     save_path = saver.save(sess,'summary/'+str(repeat_layer)+'_'+ str(epoch_i)+".ckpt")
     print("Model saved in file: %s" % save_path)
-    for w in trainWs:
-        a=w.eval(session=sess)
-        print(a.shape,a.mean(),a.std())
-    if epoch_i>83:
+        
+    if epoch_i>11:
         learning_rate=.01
-    if epoch_i>125:
-        learning_rate=.001
-    if epoch_i>162:
-        break
-#    if elapsed()>180-time_per_epoch:
-#        break
-print("test acc:"+eval(Xte,Yte))
+    if epoch_i>16:
+        learning_rate=.005
+        if elapsed()>165:
+            break
 
+saver.restore(sess,'summary/'+str(repeat_layer)+'_'+str(best)+'.ckpt')
+print("test acc:"+str(eval(Xte[:1000],Yte[:1000])))
