@@ -7,6 +7,7 @@ This residual neural network is different from the [original paper](https://gith
 
 This residual net can't beat 18/34/150/1000 layers residual nets in the long run, however, more efficient with non-sufficient training time, interestingly.  
 Details are shown [here](report/mp2_Yihui%20He.pdf). Archtecture shown at the bottom.  
+###### If you have any questions, I'm glad to discuss with you.  
 
 ### results on cifar100  
 Traning 3 hours on CPU:  
