@@ -10,20 +10,20 @@ Details are shown [here](report/mp2_Yihui%20He.pdf). Archtecture shown at the bo
 
 ### results on cifar100  
 Traning 3 hours on CPU:  
-Single layer network with PCA whitening and Kmeans which is 75% accurate on CIFAR10, reaches   
-- Train accuracy:  0.613040816327
-- Validation accuracy:  0.562
-- Test accuracy:  0.559
+- Single layer network with PCA whitening and Kmeans which is 75% accurate on CIFAR10, reaches   
+    - Train accuracy:  0.613040816327
+    - Validation accuracy:  0.562
+    - Test accuracy:  0.559
   
-13 layers ResNet(this repo) **63%**  
+- 13 layers ResNet(this repo) **63%**  
   
-[Mimic Learning](resource/do-deep-nets-really-need-to-be-deep.pdf)  50% (with bad teacher model)  
+- [Mimic Learning](resource/do-deep-nets-really-need-to-be-deep.pdf)  50% (with bad teacher model)  
 
 ### results on cifar10  
 Traning 3 hours on CPU:  
-[Alexnet](https://www.tensorflow.org/versions/r0.8/tutorials/deep_cnn/index.html) reaches 82%  
-13 layers Residual network(this repo) reaches 84%  
-[Single layer neural network with PCA and Kmeans](https://github.com/yihui-he/Single-Layer-neural-network-with-PCAwhitening-Kmeans) reaches 78%(after I fixed a minor bug.)  
+- [Alexnet](https://www.tensorflow.org/versions/r0.8/tutorials/deep_cnn/index.html) reaches 82%  
+- 13 layers Residual network(this repo) reaches 84%  
+- [Single layer neural network with PCA and Kmeans](https://github.com/yihui-he/Single-Layer-neural-network-with-PCAwhitening-Kmeans) reaches 78%(after I fixed a minor bug.)  
 
 ### How to run  
 `python redo.py /path/to/CIFAR100python/`  
