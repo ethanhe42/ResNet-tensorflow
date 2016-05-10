@@ -21,8 +21,8 @@ Mimic Learning  50% (with bad teacher model)
 
 ### results on cifar10  
 Traning 3 hours on CPU:  
-Alexnet reaches 82%  
-13 layers Residual network reaches 84%  
+[Alexnet](https://www.tensorflow.org/versions/r0.8/tutorials/deep_cnn/index.html) reaches 82%  
+13 layers Residual network(this repo) reaches 84%  
 [Single layer neural network with PCA and Kmeans](https://github.com/yihui-he/Single-Layer-neural-network-with-PCAwhitening-Kmeans) reaches 78%(after I fixed a minor bug.)  
 
 ### How to run  
