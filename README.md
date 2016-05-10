@@ -1,16 +1,28 @@
-# Reisdual neural network  
+# Fast Residual neural network  
+This RNN spends 3 hours to train on a modern CPU. It can reach 63% on CIFAR100 coarse 20 classes task.   
+This residual neural network is different from the [original paper](https://github.com/KaimingHe/deep-residual-networks) in there ways:
+- Only have 13 layers, which the original paper didn't studied.  
+- No ReLU before subsampling convolutional layer, which improve accuracy by 3%  
+- Batchnorm is done before addition, which improve accuracy a little bit.  
+
+This residual net can't beat 18/34/150/1000 layers residual nets in the long run, however, more efficient with non-sufficient training time, interestingly.  
+Details are shown [here](report/mp2_Yihui%20He.pdf). Archtecture shown at the bottom.  
+
 ### results on cifar100  
 Single layer network with PCA whitening and Kmeans which is 75% accurate on CIFAR10, reaches   
 - Train accuracy:  0.613040816327
 - Validation accuracy:  0.562
 - Test accuracy:  0.559
+  
+13 layers ResNet **63%**  
+  
+Mimic Learning  50% (with bad teacher model)  
 
-13 layers ResNet 60%  
-
-
-### results on cifar10
-Traditional convolution neural network reaches 82% in 3 hours  
-7 layers Residual network reaches 83%  
+### results on cifar10  
+Traning 3 hours on the same machine:  
+Alexnet reaches 82%  
+13 layers Residual network reaches 84%  
+[Single layer neural network with PCA and Kmeans](https://github.com/yihui-he/Single-Layer-neural-network-with-PCAwhitening-Kmeans) reaches 78%(after I fixed a minor bug.)  
 
 ### Features  
 - [x] Output layers contain 20 labels
@@ -31,18 +43,7 @@ Traditional convolution neural network reaches 82% in 3 hours
 - [x] filter size of convolution layers
 - [x] filter size of pooling layers  
 
-### report
-1. implementation  
-2. architecture  
-3. Model  
-4. results  
-5. extra credits  
-6. challenges  
-7. possible improvements  
-
-### potential effecient net  
-- unsurpervised layer by layer training  
-- extreme machine
-- mimic training  
+### architecture  
+![arch](report/arch.png)
 
 
