@@ -9,6 +9,7 @@ This residual net can't beat 18/34/150/1000 layers residual nets in the long run
 Details are shown [here](report/mp2_Yihui%20He.pdf). Archtecture shown at the bottom.  
 
 ### results on cifar100  
+Traning 3 hours on CPU:
 Single layer network with PCA whitening and Kmeans which is 75% accurate on CIFAR10, reaches   
 - Train accuracy:  0.613040816327
 - Validation accuracy:  0.562
@@ -19,10 +20,13 @@ Single layer network with PCA whitening and Kmeans which is 75% accurate on CIFA
 Mimic Learning  50% (with bad teacher model)  
 
 ### results on cifar10  
-Traning 3 hours on the same machine:  
+Traning 3 hours on CPU:  
 Alexnet reaches 82%  
 13 layers Residual network reaches 84%  
 [Single layer neural network with PCA and Kmeans](https://github.com/yihui-he/Single-Layer-neural-network-with-PCAwhitening-Kmeans) reaches 78%(after I fixed a minor bug.)  
+
+### How to run  
+`python redo.py /path/to/CIFAR100python/`  
 
 ### Features  
 - [x] Output layers contain 20 labels
