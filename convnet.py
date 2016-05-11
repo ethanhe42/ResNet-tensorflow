@@ -281,7 +281,7 @@ for epoch_i in range(0,n_epochs):
                 summary_writer.add_summary(summary_str, epoch_i*iter_per_epoch+batch_i)
             print('loss '+str(loss)+',time '+str(elapsed()))
     train_acc=eval( batch_xs,batch_ys )
-    val_acc=eval(Xte[:1000],Yte[:1000])
+    val_acc=eval(Xtr[-valid_set:],Ytr[-valid_set:])
     print("epoch"+str(epoch_i)+
             " avg_loss:"+str(avg_loss/iter_per_epoch)+
             " train acc:"+ str(train_acc)+
