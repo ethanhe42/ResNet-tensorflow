@@ -1,30 +1,22 @@
-# Fast Residual neural network  
-This RNN spends 3 hours to train on a modern CPU. It can reach 63% on CIFAR100 coarse 20 classes task.   
+# Fast ResNet for CIFAR
+This ResNet spends 3 hours to train on a modern CPU. It can reach 63% on CIFAR100 coarse 20 classes task.   
 This residual neural network is different from the [original paper](https://github.com/KaimingHe/deep-residual-networks) in there ways:
 - Only have 13 layers, which the original paper didn't studied.  
 - No ReLU before subsampling convolutional layer, which improve accuracy by 3%  
-- Batchnorm is done before addition, which improve accuracy a little bit.  
+- BatchNorm is done before addition, which improve accuracy a little bit.  
 
-This residual net can't beat 18/34/150/1000 layers residual nets in the long run, however, more efficient with non-sufficient training time, interestingly.  
+This ResNet-13 can't beat ResNet-18/34/150/1000 layers residual nets in the long run, however, more efficient with non-sufficient training time, interestingly.  
 Details are shown [here](report/mp2_Yihui%20He.pdf). Archtecture shown at the bottom.  
-###### If you have any questions, I'm glad to discuss with you.  
 
-### results on cifar100  
+### results on CIFAR-10/CIFAR-100
 Traning 3 hours on CPU:  
-- Single layer network with PCA whitening and Kmeans which is 75% accurate on CIFAR10, reaches   
-    - Train accuracy:  0.613040816327
-    - Validation accuracy:  0.562
-    - Test accuracy:  0.559
-  
-- 13 layers ResNet(this repo) **63%**  
-  
-- [Mimic Learning](resource/do-deep-nets-really-need-to-be-deep.pdf)  50% (with bad teacher model)  
 
-### results on cifar10  
-Traning 3 hours on CPU:  
-- [Alexnet](https://www.tensorflow.org/versions/r0.8/tutorials/deep_cnn/index.html) reaches 82%  
-- 13 layers Residual network(this repo) reaches 84%  
-- [Single layer neural network with PCA and Kmeans](https://github.com/yihui-he/Single-Layer-neural-network-with-PCAwhitening-Kmeans) reaches 78%(after I fixed a minor bug.)  
+Acc. | CIFAR-10 | CIFAR-100 
+--- | --- | ---
+[Alexnet](https://www.tensorflow.org/versions/r0.8/tutorials/deep_cnn/index.html) | 82% | -
+[Mimic Learning](resource/do-deep-nets-really-need-to-be-deep.pdf) | - | 50%
+[2-layer NN with PCA and Kmeans](https://github.com/yihui-he/Single-Layer-neural-network-with-PCAwhitening-Kmeans) | 78% | 56%
+ResNet-13 (this repo) | **84%**  | **63%** 
 
 ### How to run  
 `python redo.py /path/to/CIFAR100python/`  
